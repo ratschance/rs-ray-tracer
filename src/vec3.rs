@@ -1,4 +1,4 @@
-use std::ops::{Add, Neg, Mul, Div};
+use std::ops::{Add, Neg, Mul, Div, Sub};
 
 #[derive(Copy, Clone)]
 pub struct Vec3 {
@@ -36,6 +36,16 @@ impl Add for Vec3 {
         Vec3{ x: self.x + other.x,
                 y: self.y + other.y,
                 z: self.z + other.z }
+    }
+}
+
+impl Sub for Vec3 {
+    type Output = Vec3;
+
+    fn sub(self, other: Vec3) -> Vec3 {
+        Vec3{ x: self.x - other.x,
+                y: self.y - other.y,
+                z: self.z - other.z }
     }
 }
 

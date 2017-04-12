@@ -1,58 +1,51 @@
 mod vec3;
 mod ray;
+mod hitrecord;
+mod sphere;
 
 use vec3::Vec3;
 use ray::Ray;
+use std::f64;
+use hitrecord::Hitable;
+use sphere::Sphere;
 
 fn main() {
-    let nx = 200;
-    let ny = 100;
+    let nx: u32 = 200;
+    let ny: u32 = 100;
 
     println!("P3\n{} {}\n255", nx, ny);
 
-    let lower_left_corner = Vec3{ x: -2.0, y: -1.0, z: -1.0 };
-    let horizontal = Vec3{ x: 4.0, y: 0.0, z: 0.0 };
-    let vertical = Vec3{ x: 0.0, y: 2.0, z: 0.0 };
-    let origin = Vec3{ x: 0.0, y: 0.0, z: 0.0 };
+    let lower_left_corner = Vec3::new(-2.0, -1.0, -1.0);
+    let horizontal = Vec3::new(4.0, 0.0, 0.0);
+    let vertical = Vec3::new(0.0, 2.0, 0.0);
+    let origin = Vec3::new(0.0, 0.0, 0.0);
+
+    let mut hitable_list: Vec<Box<Hitable>> = Vec::new();
+    hitable_list.push(Box::new(Sphere{center: Vec3::new(0.0, -0.0, -1.0), radius: 0.5}));
+    hitable_list.push(Box::new(Sphere{center: Vec3::new(0.0, -100.5, -1.0), radius: 100.0}));
 
     for j in (0..ny).rev() {
         for i in 0..nx {
             let u = (i as f64) / (nx as f64);
             let v = (j as f64) / (ny as f64);
-            let r = Ray { a: origin,
-                b: lower_left_corner + u*horizontal + v*vertical };
-            let col = color(&r);
+            let r = Ray::new(origin, lower_left_corner + (horizontal * u) + (vertical * v));
 
-            let ir = (255.99 * col.r()) as i32;
-            let ig = (255.99 * col.g()) as i32;
-            let ib = (255.99 * col.b()) as i32;
+            let col = color(&r, &hitable_list[..]);
+            let ir = (255.99 * col.r()) as u8;
+            let ig = (255.99 * col.g()) as u8;
+            let ib = (255.99 * col.b()) as u8;
             println!("{} {} {}", ir, ig, ib);
         }
     }
 }
 
-fn color(r: &ray::Ray) -> Vec3 {
-    let t = hit_sphere(&Vec3 { x: 0.0, y: 0.0, z: -1.0 }, 0.5, r);
-    if t > 0.0 {
-        let n = vec3::unit_vector(r.point_at_parameter(t) 
-                                    - Vec3 { x: 0.0, y: 0.0, z: -1.0 });
-        return 0.5 * Vec3 { x: n.x + 1.0, y: n.y + 1.0, z: n.z + 1.0 };
-    }
-    let unit_direction = vec3::unit_vector(r.direction());
-    let t = 0.5 * (unit_direction.y + 1.0);
-    (1.0 - t) * Vec3 { x: 1.0, y: 1.0, z: 1.0 } +
-        t * Vec3 { x: 0.5, y: 0.7, z: 1.0 }
-}
-
-fn hit_sphere(center: &Vec3, radius: f64, r: &Ray) -> f64 {
-    let oc = r.origin() - *center;
-    let a = vec3::dot(&r.direction(), &r.direction());
-    let b = 2.0 * vec3::dot(&oc, &r.direction());
-    let c = vec3::dot(&oc, &oc) - radius*radius;
-    let descriminant = b*b - 4.0*a*c;
-    if descriminant < 0.0 {
-        -1.0
-    } else {
-        (-b - descriminant.sqrt()) / (2.0 * a)
+fn color(r: &ray::Ray, world: &[Box<Hitable>]) -> Vec3 {
+    match world.hit(r, 0.0, f64::INFINITY) {
+        Some(rec) => (rec.normal + 1.0) * 0.5,
+        None => {
+            let unit_direction = r.direction().unit_vector();
+            let t = 0.5 * (unit_direction.y + 1.0);
+            Vec3::new(1.0, 1.0, 1.0) * (1.0 - t) + Vec3::new(0.5, 0.7, 1.0) * t
+        }
     }
 }

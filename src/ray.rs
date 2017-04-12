@@ -1,20 +1,25 @@
 use vec3;
 
+#[derive(Debug)]
 pub struct Ray {
-    pub a: vec3::Vec3,
-    pub b: vec3::Vec3,
+    pub origin: vec3::Vec3,
+    pub direction: vec3::Vec3,
 }
 
 impl Ray {
+    pub fn new(origin: vec3::Vec3, direction: vec3::Vec3) -> Self {
+        Ray { origin: origin, direction: direction }
+    }
+
     pub fn origin(&self) -> vec3::Vec3 {
-        self.a
+        self.origin
     }
 
     pub fn direction(&self) -> vec3::Vec3 {
-        self.b
+        self.direction
     }
 
-    pub fn point_at_parameter(&self, t: f64) -> vec3::Vec3 {
-        self.a + t*self.b
+    pub fn point_at_parameter(&self, distance: f64) -> vec3::Vec3 {
+        self.origin + self.direction * distance
     }
 }

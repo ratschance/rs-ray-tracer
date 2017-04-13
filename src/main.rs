@@ -7,11 +7,12 @@ mod sphere;
 mod camera;
 
 use camera::Camera;
-use vec3::Vec3;
-use std::f64;
 use hitrecord::Hitable;
 use rand::Rng;
+use ray::Ray;
 use sphere::Sphere;
+use std::f64;
+use vec3::Vec3;
 
 fn main() {
     let nx: u32 = 200;
@@ -39,17 +40,32 @@ fn main() {
                 col += color(&r, &hitable_list);
             }
             let col = col / ns as f64;
-            let ir = (255.99 * col.r()) as u8;
-            let ig = (255.99 * col.g()) as u8;
-            let ib = (255.99 * col.b()) as u8;
+            let ir = (255.99 * col.r().sqrt()) as u8;
+            let ig = (255.99 * col.g().sqrt()) as u8;
+            let ib = (255.99 * col.b().sqrt()) as u8;
             println!("{} {} {}", ir, ig, ib);
         }
     }
 }
 
+fn random_in_unit_sphere() -> Vec3 {
+    let mut p = Vec3::new(1.0, 1.0, 1.0);
+    while p.dot(p) >= 1.0 {
+        p = Vec3::new(
+            rand::random::<f64>(), rand::random::<f64>(), rand::random::<f64>())
+            * 2.0 - Vec3::new(1.0, 1.0, 1.0);
+    }
+    p
+}
+
+
 fn color(r: &ray::Ray, world: &[Box<Hitable>]) -> Vec3 {
     match world.hit(r, 0.0, f64::INFINITY) {
-        Some(rec) => (rec.normal + 1.0) * 0.5,
+        Some(rec) => {
+            let target = rec.p + rec.normal + random_in_unit_sphere();
+            let ray = Ray::new(rec.p, target - rec.p);
+            color(&ray, world) * 0.5
+        }
         None => {
             let unit_direction = r.direction().unit_vector();
             let t = 0.5 * (unit_direction.y + 1.0);

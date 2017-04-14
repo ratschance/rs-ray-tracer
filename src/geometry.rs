@@ -7,8 +7,32 @@ pub struct Vec3 {
     pub z: f64,
 }
 
+#[derive(Debug)]
+pub struct Ray {
+    pub origin: Vec3,
+    pub direction: Vec3,
+}
+
+impl Ray {
+    pub fn new(origin: Vec3, direction: Vec3) -> Self {
+        Ray { origin: origin, direction: direction }
+    }
+
+    pub fn origin(&self) -> Vec3 {
+        self.origin
+    }
+
+    pub fn direction(&self) -> Vec3 {
+        self.direction
+    }
+
+    pub fn point_at_parameter(&self, distance: f64) -> Vec3 {
+        self.origin + self.direction * distance
+    }
+}
+
 impl Vec3 {
-    pub fn new(x: f64, y: f64, z: f64) -> Vec3 {
+    pub fn new(x: f64, y: f64, z: f64) -> Self {
         Vec3{ x: x, y: y, z: z}
     }
 

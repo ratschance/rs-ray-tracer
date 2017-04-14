@@ -1,18 +1,14 @@
 extern crate rand;
 
-mod vec3;
-mod ray;
-mod hitrecord;
-mod sphere;
+mod geometry;
+mod hitable;
 mod camera;
 
 use camera::Camera;
-use hitrecord::Hitable;
+use hitable::{Hitable, Sphere};
+use geometry::{Ray, Vec3};
 use rand::Rng;
-use ray::Ray;
-use sphere::Sphere;
 use std::f64;
-use vec3::Vec3;
 
 fn main() {
     let nx: u32 = 200;
@@ -59,7 +55,7 @@ fn random_in_unit_sphere() -> Vec3 {
 }
 
 
-fn color(r: &ray::Ray, world: &[Box<Hitable>]) -> Vec3 {
+fn color(r: &Ray, world: &[Box<Hitable>]) -> Vec3 {
     match world.hit(r, 0.0, f64::INFINITY) {
         Some(rec) => {
             let target = rec.p + rec.normal + random_in_unit_sphere();

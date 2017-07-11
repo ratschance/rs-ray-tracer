@@ -1,12 +1,14 @@
 extern crate rand;
 
+mod camera;
 mod geometry;
 mod hitable;
-mod camera;
+mod material;
 
 use camera::Camera;
 use hitable::{Hitable, Sphere};
 use geometry::{Ray, Vec3};
+use material::{Lambertian, Metal};
 use rand::Rng;
 use std::f64;
 
@@ -18,8 +20,18 @@ fn main() {
     println!("P3\n{} {}\n255", nx, ny);
 
     let mut hitable_list: Vec<Box<Hitable>> = Vec::new();
-    hitable_list.push(Box::new(Sphere{center: Vec3::new(0.0, -0.0, -1.0), radius: 0.5}));
-    hitable_list.push(Box::new(Sphere{center: Vec3::new(0.0, -100.5, -1.0), radius: 100.0}));
+    hitable_list.push(Box::new(
+            Sphere::new(
+                Vec3::new(0.0, -0.0, -1.0),
+                0.5,
+                Box::new(Lambertian::new(Vec3::new(0.8, 0.3, 0.3)))
+            )));
+    hitable_list.push(Box::new(
+            Sphere::new(
+                Vec3::new(0.0, -100.5, -1.0),
+                100.0,
+                Box::new(Lambertian::new(Vec3::new(0.8, 0.8, 0.0)))
+            )));
 
     let cam = Camera::new();
 
@@ -33,7 +45,7 @@ fn main() {
                 let v = (j as f64 + rng.gen::<f64>()) / (ny as f64);
                 let r = cam.get_ray(u, v);
 
-                col += color(&r, &hitable_list);
+                col += color(&r, &hitable_list, 0);
             }
             let col = col / ns as f64;
             let ir = (255.99 * col.r().sqrt()) as u8;
@@ -44,23 +56,24 @@ fn main() {
     }
 }
 
-fn random_in_unit_sphere() -> Vec3 {
-    let mut p = Vec3::new(1.0, 1.0, 1.0);
-    while p.dot(p) >= 1.0 {
-        p = Vec3::new(
-            rand::random::<f64>(), rand::random::<f64>(), rand::random::<f64>())
-            * 2.0 - Vec3::new(1.0, 1.0, 1.0);
-    }
-    p
-}
 
 
-fn color(r: &Ray, world: &[Box<Hitable>]) -> Vec3 {
-    match world.hit(r, 0.0, f64::INFINITY) {
+
+fn color(r: &Ray, world: &[Box<Hitable>], depth: u8) -> Vec3 {
+    match world.hit(r, 0.001, f64::INFINITY) {
         Some(rec) => {
-            let target = rec.p + rec.normal + random_in_unit_sphere();
-            let ray = Ray::new(rec.p, target - rec.p);
-            color(&ray, world) * 0.5
+            if depth < 50 {
+                let vals = rec.material.scatter(r, &rec);
+                if vals.is_some() {
+                    let (attenuation, scattered) = vals.unwrap();
+                    attenuation * color(&scattered, world, depth + 1)
+                } else {
+                    Vec3::new(0.0, 0.0, 0.0)
+                }
+            } else {
+                Vec3::new(0.0, 0.0, 0.0)
+            }
+
         }
         None => {
             let unit_direction = r.direction().unit_vector();

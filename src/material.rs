@@ -2,53 +2,29 @@ extern crate rand;
 
 use geometry::{Ray, Vec3};
 use hitable::HitRecord;
-use rand::Rng;
 
-pub trait Material : Copy + Clone {
-    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Vec3, Ray)>;
+#[derive(Debug, Clone, Copy)]
+pub enum Material {
+    Lambertian(Vec3),
+    Metal(Vec3)
 }
 
-#[derive(Copy, Clone, Debug)]
-pub struct Lambertian {
-    pub albedo: Vec3
-}
-
-#[derive(Copy, Clone, Debug)]
-pub struct Metal {
-    pub albedo: Vec3
-}
-
-impl Lambertian {
-    pub fn new(albedo: Vec3) -> Self {
-        Lambertian{ albedo: albedo }
-    }
-}
-
-impl Metal {
-    pub fn new(albedo: Vec3) -> Self {
-        Metal{ albedo: albedo }
-    }
-}
-
-impl Material for Lambertian {
-    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Vec3, Ray)> {
-        let target = rec.point + rec.normal + random_in_unit_sphere();
-        let scattered = Ray::new(rec.point, target - rec.point);
-        let attenuation = self.albedo;
-        Some((attenuation, scattered))
-    }
-}
-
-impl Material for Metal {
-    fn scatter(&self, r_in: &Ray, rec: &HitRecord) -> Option<(Vec3, Ray)> {
-        let reflect = |v: Vec3, n: Vec3| v - n * v.dot(n) * 2.0;
-        let reflected = reflect(r_in.direction().unit_vector(), rec.normal);
-        let scattered = Ray::new(rec.point, reflected);
-        let attenuation = self.albedo;
-        if scattered.direction().dot(rec.normal) > 0.0 {
+pub fn scatter(material: Material, r_in: &Ray, rec: &HitRecord) -> Option<(Vec3, Ray)> {
+    match material {
+        Material::Lambertian(attenuation) => {
+            let target = rec.point + rec.normal + random_in_unit_sphere();
+            let scattered = Ray::new(rec.point, target - rec.point);
             Some((attenuation, scattered))
-        } else {
-            None
+        },
+        Material::Metal(attenuation) => {
+            let reflect = |v: Vec3, n: Vec3| v - n * v.dot(n) * 2.0;
+            let reflected = reflect(r_in.direction().unit_vector(), rec.normal);
+            let scattered = Ray::new(rec.point, reflected);
+            if scattered.direction().dot(rec.normal) > 0.0 {
+                Some((attenuation, scattered))
+            } else {
+                None
+            }
         }
     }
 }

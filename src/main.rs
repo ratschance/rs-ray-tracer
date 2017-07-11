@@ -8,7 +8,7 @@ mod material;
 use camera::Camera;
 use hitable::{Hitable, Sphere};
 use geometry::{Ray, Vec3};
-use material::{Lambertian, Metal};
+use material::Material;
 use rand::Rng;
 use std::f64;
 
@@ -22,15 +22,27 @@ fn main() {
     let mut hitable_list: Vec<Box<Hitable>> = Vec::new();
     hitable_list.push(Box::new(
             Sphere::new(
-                Vec3::new(0.0, -0.0, -1.0),
-                0.5,
-                Box::new(Lambertian::new(Vec3::new(0.8, 0.3, 0.3)))
+                Vec3::new(0.0, -100.5, -1.0),
+                100.0,
+                Material::Lambertian(Vec3::new(0.8, 0.8, 0.0))
             )));
     hitable_list.push(Box::new(
             Sphere::new(
-                Vec3::new(0.0, -100.5, -1.0),
-                100.0,
-                Box::new(Lambertian::new(Vec3::new(0.8, 0.8, 0.0)))
+                Vec3::new(0.0, 0.0, -1.0),
+                0.5,
+                Material::Lambertian(Vec3::new(0.8, 0.3, 0.3))
+            )));
+    hitable_list.push(Box::new(
+            Sphere::new(
+                Vec3::new(1.0, 0.0, -1.0),
+                0.5,
+                Material::Metal(Vec3::new(0.8, 0.6, 0.2))
+            )));
+    hitable_list.push(Box::new(
+            Sphere::new(
+                Vec3::new(-1.0, 0.0, -1.0),
+                0.5,
+                Material::Metal(Vec3::new(0.8, 0.8, 0.8))
             )));
 
     let cam = Camera::new();
@@ -59,11 +71,11 @@ fn main() {
 
 
 
-fn color(r: &Ray, world: &[Box<Hitable>], depth: u8) -> Vec3 {
-    match world.hit(r, 0.001, f64::INFINITY) {
+fn color(ray: &Ray, world: &[Box<Hitable>], depth: u8) -> Vec3 {
+    match world.hit(ray, 0.001, f64::INFINITY) {
         Some(rec) => {
             if depth < 50 {
-                let vals = rec.material.scatter(r, &rec);
+                let vals = material::scatter(rec.material, ray, &rec);
                 if vals.is_some() {
                     let (attenuation, scattered) = vals.unwrap();
                     attenuation * color(&scattered, world, depth + 1)
@@ -76,7 +88,7 @@ fn color(r: &Ray, world: &[Box<Hitable>], depth: u8) -> Vec3 {
 
         }
         None => {
-            let unit_direction = r.direction().unit_vector();
+            let unit_direction = ray.direction().unit_vector();
             let t = 0.5 * (unit_direction.y + 1.0);
             Vec3::new(1.0, 1.0, 1.0) * (1.0 - t) + Vec3::new(0.5, 0.7, 1.0) * t
         }

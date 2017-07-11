@@ -10,23 +10,23 @@ pub struct HitRecord {
     pub parameter: f64,
     pub point: Vec3,
     pub normal: Vec3,
-    pub material: Box<Material>
+    pub material: Material
 }
 
 pub struct Sphere {
     pub center: Vec3,
     pub radius: f64,
-    pub material: Box<Material>
+    pub material: Material
 }
 
 impl HitRecord {
-    pub fn new(parameter: f64, point: Vec3, normal: Vec3, material: Box<Material>) -> HitRecord {
+    pub fn new(parameter: f64, point: Vec3, normal: Vec3, material: Material) -> HitRecord {
         HitRecord{ parameter: parameter, point: point, normal: normal, material: material}
     }
 }
 
 impl Sphere {
-    pub fn new(center: Vec3, radius: f64, material: Box<Material>) -> Self {
+    pub fn new(center: Vec3, radius: f64, material: Material) -> Self {
         Sphere{ center: center, radius: radius, material: material }
     }
 }

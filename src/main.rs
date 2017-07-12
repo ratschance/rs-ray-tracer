@@ -20,33 +20,28 @@ fn main() {
     println!("P3\n{} {}\n255", nx, ny);
 
     let mut hitable_list: Vec<Box<Hitable>> = Vec::new();
-    hitable_list.push(Box::new(
-            Sphere::new(
-                Vec3::new(0.0, -100.5, -1.0),
-                100.0,
-                Material::Lambertian(Vec3::new(0.8, 0.8, 0.0))
-            )));
-    hitable_list.push(Box::new(
-            Sphere::new(
-                Vec3::new(0.0, 0.0, -1.0),
-                0.5,
-                Material::Lambertian(Vec3::new(0.8, 0.3, 0.3))
-            )));
-    hitable_list.push(Box::new(
-            Sphere::new(
-                Vec3::new(1.0, 0.0, -1.0),
-                0.5,
-                Material::Metal(Vec3::new(0.8, 0.6, 0.2))
-            )));
-    hitable_list.push(Box::new(
-            Sphere::new(
-                Vec3::new(-1.0, 0.0, -1.0),
-                0.5,
-                Material::Metal(Vec3::new(0.8, 0.8, 0.8))
-            )));
+    hitable_list.push(Box::new(Sphere::new(
+        Vec3::new(0.0, -100.5, -1.0),
+        100.0,
+        Material::Lambertian(Vec3::new(0.8, 0.8, 0.0)),
+    )));
+    hitable_list.push(Box::new(Sphere::new(
+        Vec3::new(0.0, 0.0, -1.0),
+        0.5,
+        Material::Lambertian(Vec3::new(0.8, 0.3, 0.3)),
+    )));
+    hitable_list.push(Box::new(Sphere::new(
+        Vec3::new(1.0, 0.0, -1.0),
+        0.5,
+        Material::Metal(Vec3::new(0.8, 0.6, 0.2)),
+    )));
+    hitable_list.push(Box::new(Sphere::new(
+        Vec3::new(-1.0, 0.0, -1.0),
+        0.5,
+        Material::Metal(Vec3::new(0.8, 0.8, 0.8)),
+    )));
 
     let cam = Camera::new();
-
     let mut rng = rand::thread_rng();
 
     for j in (0..ny).rev() {
@@ -68,9 +63,6 @@ fn main() {
     }
 }
 
-
-
-
 fn color(ray: &Ray, world: &[Box<Hitable>], depth: u8) -> Vec3 {
     match world.hit(ray, 0.001, f64::INFINITY) {
         Some(rec) => {
@@ -85,7 +77,6 @@ fn color(ray: &Ray, world: &[Box<Hitable>], depth: u8) -> Vec3 {
             } else {
                 Vec3::new(0.0, 0.0, 0.0)
             }
-
         }
         None => {
             let unit_direction = ray.direction().unit_vector();

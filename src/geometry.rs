@@ -15,7 +15,10 @@ pub struct Ray {
 
 impl Ray {
     pub fn new(origin: Vec3, direction: Vec3) -> Self {
-        Ray { origin: origin, direction: direction }
+        Ray {
+            origin: origin,
+            direction: direction,
+        }
     }
 
     pub fn origin(&self) -> Vec3 {
@@ -33,7 +36,7 @@ impl Ray {
 
 impl Vec3 {
     pub fn new(x: f64, y: f64, z: f64) -> Self {
-        Vec3{ x: x, y: y, z: z}
+        Vec3 { x: x, y: y, z: z }
     }
 
     pub fn r(self) -> f64 {
@@ -69,28 +72,21 @@ impl Add for Vec3 {
     type Output = Vec3;
 
     fn add(self, other: Vec3) -> Vec3 {
-        Vec3::new(self.x + other.x,
-            self.y + other.y,
-            self.z + other.z)
+        Vec3::new(self.x + other.x, self.y + other.y, self.z + other.z)
     }
 }
 
 impl AddAssign for Vec3 {
     fn add_assign(&mut self, other: Vec3) {
-        *self = Vec3::new(
-            self.x + other.x,
-            self.y + other.y,
-            self.z + other.z)
+        *self = Vec3::new(self.x + other.x, self.y + other.y, self.z + other.z)
     }
-
 }
+
 impl Add<f64> for Vec3 {
     type Output = Vec3;
 
     fn add(self, other: f64) -> Vec3 {
-        Vec3::new(self.x + other,
-            self.y + other,
-            self.z + other)
+        Vec3::new(self.x + other, self.y + other, self.z + other)
     }
 }
 
@@ -98,9 +94,7 @@ impl Sub for Vec3 {
     type Output = Vec3;
 
     fn sub(self, other: Vec3) -> Vec3 {
-        Vec3::new(self.x - other.x,
-            self.y - other.y,
-            self.z - other.z)
+        Vec3::new(self.x - other.x, self.y - other.y, self.z - other.z)
     }
 }
 
@@ -108,7 +102,11 @@ impl Div<f64> for Vec3 {
     type Output = Vec3;
 
     fn div(self, other: f64) -> Vec3 {
-        Vec3 { x: self.x / other , y: self.y / other, z: self.z / other }
+        Vec3 {
+            x: self.x / other,
+            y: self.y / other,
+            z: self.z / other,
+        }
     }
 }
 
@@ -124,9 +122,7 @@ impl Mul for Vec3 {
     type Output = Vec3;
 
     fn mul(self, other: Vec3) -> Vec3 {
-        Vec3::new(self.x * other.x,
-            self.y * other.y,
-            self.z * other.z)
+        Vec3::new(self.x * other.x, self.y * other.y, self.z * other.z)
     }
 }
 
@@ -134,8 +130,6 @@ impl Mul<f64> for Vec3 {
     type Output = Vec3;
 
     fn mul(self, other: f64) -> Vec3 {
-        Vec3::new(self.x * other,
-            self.y * other,
-            self.z * other)
+        Vec3::new(self.x * other, self.y * other, self.z * other)
     }
 }

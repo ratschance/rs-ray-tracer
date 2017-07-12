@@ -10,24 +10,33 @@ pub struct HitRecord {
     pub parameter: f64,
     pub point: Vec3,
     pub normal: Vec3,
-    pub material: Material
+    pub material: Material,
 }
 
 pub struct Sphere {
     pub center: Vec3,
     pub radius: f64,
-    pub material: Material
+    pub material: Material,
 }
 
 impl HitRecord {
     pub fn new(parameter: f64, point: Vec3, normal: Vec3, material: Material) -> HitRecord {
-        HitRecord{ parameter: parameter, point: point, normal: normal, material: material}
+        HitRecord {
+            parameter: parameter,
+            point: point,
+            normal: normal,
+            material: material,
+        }
     }
 }
 
 impl Sphere {
     pub fn new(center: Vec3, radius: f64, material: Material) -> Self {
-        Sphere{ center: center, radius: radius, material: material }
+        Sphere {
+            center: center,
+            radius: radius,
+            material: material,
+        }
     }
 }
 
@@ -36,18 +45,18 @@ impl Hitable for Sphere {
         let oc = r.origin() - self.center;
         let a = r.direction().dot(r.direction());
         let b = oc.dot(r.direction());
-        let c = oc.dot(oc) - self.radius*self.radius;
-        let descriminant = b*b - a*c;
+        let c = oc.dot(oc) - self.radius * self.radius;
+        let descriminant = b * b - a * c;
         if descriminant > 0.0 {
             let sqrt_descriminant = descriminant.sqrt();
-            let root = (-b - sqrt_descriminant)/a;
+            let root = (-b - sqrt_descriminant) / a;
             if root < t_max && root > t_min {
                 let parameter = root;
                 let point = r.point_at_parameter(parameter);
                 let normal = (point - self.center) / self.radius;
                 return Some(HitRecord::new(parameter, point, normal, self.material));
             }
-            let root = (-b + sqrt_descriminant)/a;
+            let root = (-b + sqrt_descriminant) / a;
             if root < t_max && root > t_min {
                 let parameter = root;
                 let point = r.point_at_parameter(parameter);
@@ -68,7 +77,7 @@ impl Hitable for [Box<Hitable>] {
                 Some(t_rec) => {
                     closest_so_far = t_rec.parameter;
                     hit = Some(t_rec);
-                },
+                }
                 None => {}
             }
         }

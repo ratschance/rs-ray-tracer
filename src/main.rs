@@ -1,7 +1,7 @@
 extern crate rand;
 
-mod camera;
-mod geometry;
+pub mod camera;
+pub mod geometry;
 mod hitable;
 mod material;
 

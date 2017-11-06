@@ -10,14 +10,17 @@ use hitable::{Hitable, Sphere};
 use geometry::{Ray, Vec3};
 use material::Material;
 use rand::Rng;
+use std::error::Error;
 use std::f64;
+use std::fs::File;
+use std::io::BufWriter;
+use std::io::prelude::*;
+use std::path::Path;
 
 fn main() {
-    let nx: u32 = 200;
-    let ny: u32 = 100;
+    let width: u32 = 200;
+    let height: u32 = 100;
     let ns: u32 = 100;
-
-    println!("P3\n{} {}\n255", nx, ny);
 
     let mut hitable_list: Vec<Box<Hitable>> = Vec::new();
     hitable_list.push(Box::new(Sphere::new(
@@ -43,13 +46,14 @@ fn main() {
 
     let cam = Camera::new();
     let mut rng = rand::thread_rng();
+    let mut pixel_data: Vec<(u8, u8, u8)> = Vec::new();
 
-    for j in (0..ny).rev() {
-        for i in 0..nx {
+    for j in (0..height).rev() {
+        for i in 0..width {
             let mut col = Vec3::new(0.0, 0.0, 0.0);
             for _ in 0..ns {
-                let u = (i as f64 + rng.gen::<f64>()) / (nx as f64);
-                let v = (j as f64 + rng.gen::<f64>()) / (ny as f64);
+                let u = (i as f64 + rng.gen::<f64>()) / (width as f64);
+                let v = (j as f64 + rng.gen::<f64>()) / (height as f64);
                 let r = cam.get_ray(u, v);
 
                 col += color(&r, &hitable_list, 0);
@@ -58,8 +62,21 @@ fn main() {
             let ir = (255.99 * col.r().sqrt()) as u8;
             let ig = (255.99 * col.g().sqrt()) as u8;
             let ib = (255.99 * col.b().sqrt()) as u8;
-            println!("{} {} {}", ir, ig, ib);
+            pixel_data.push((ir, ig, ib));
         }
+    }
+    let output_path = Path::new("output.ppm");
+    match File::create(&output_path) {
+        Ok(file) => write_ppm(file, width, height, pixel_data),
+        Err(why) => println!("Could not create file - {}", why.description())
+    }
+}
+
+fn write_ppm(file: File, width: u32, height: u32, data: Vec<(u8, u8, u8)>) {
+    let mut writer = BufWriter::new(&file);
+    writeln!(writer, "P3\n{} {}\n255", width, height);
+    for (r, g, b) in data {
+        writeln!(writer, "{} {} {}", r, g, b);
     }
 }
 

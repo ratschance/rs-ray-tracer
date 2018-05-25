@@ -74,24 +74,32 @@ impl Vec3 {
         Vec3 { x: x, y: y, z: z }
     }
 
+    pub fn one() -> Self {
+        Vec3::new(1.0, 1.0, 1.0)
+    }
+
+    pub fn zero() -> Self {
+        Vec3::new(0.0, 0.0, 0.0)
+    }
+
     /// Gets the `r` component of the vector.
     ///
     /// Used when manipulating the vector as a RGB color.
-    pub fn r(self) -> f64 {
+    pub fn r(&self) -> f64 {
         self.x
     }
 
     /// Gets the `g` component of the vector.
     ///
     /// Used when manipulating the vector as a RGB color.
-    pub fn g(self) -> f64 {
+    pub fn g(&self) -> f64 {
         self.y
     }
 
     /// Gets the `b` component of the vector.
     ///
     /// Used when manipulating the vector as a RGB color.
-    pub fn b(self) -> f64 {
+    pub fn b(&self) -> f64 {
         self.z
     }
 
@@ -99,12 +107,12 @@ impl Vec3 {
     ///
     /// This can also be referred to as the magnitude of the
     /// vector.
-    pub fn length(self) -> f64 {
+    pub fn length(&self) -> f64 {
         self.squared_length().sqrt()
     }
 
     /// Returns the sum of each component squared.
-    pub fn squared_length(self) -> f64 {
+    pub fn squared_length(&self) -> f64 {
         self.x * self.x + self.y * self.y + self.z * self.z
     }
 
@@ -113,16 +121,25 @@ impl Vec3 {
     /// # Parameters
     /// * `other` - Vec3 representing the second vector in the
     /// dot product.
-    pub fn dot(self, other: Vec3) -> f64 {
+    pub fn dot(&self, other: &Vec3) -> f64 {
         self.x * other.x + self.y * other.y + self.z * other.z
+    }
+
+    pub fn cross(&self, other: &Vec3) -> Vec3 {
+        Vec3 {
+            x: self.y * other.z - self.z * other.y,
+            y: -(self.x * other.z - self.z * other.x),
+            z: self.x * other.y - self.y * other.x
+        }
     }
 
     /// Returns a unit vector.
     ///
     /// Unit vector will have the same direction as the vector
     /// this is called on.
-    pub fn unit_vector(self) -> Self {
-        self / self.length()
+    pub fn unit_vector(&self) -> Self {
+        let length = self.length();
+        Vec3::new(self.x / length, self.y / length, self.z / length)
     }
 }
 
@@ -153,6 +170,14 @@ impl Sub for Vec3 {
 
     fn sub(self, other: Vec3) -> Vec3 {
         Vec3::new(self.x - other.x, self.y - other.y, self.z - other.z)
+    }
+}
+
+impl Sub<f64> for Vec3 {
+    type Output = Vec3;
+
+    fn sub(self, other: f64) -> Vec3 {
+        Vec3::new(self.x - other, self.y - other, self.z - other)
     }
 }
 
@@ -189,5 +214,13 @@ impl Mul<f64> for Vec3 {
 
     fn mul(self, other: f64) -> Vec3 {
         Vec3::new(self.x * other, self.y * other, self.z * other)
+    }
+}
+
+impl Mul<Vec3> for f64 {
+    type Output = Vec3;
+
+    fn mul(self, other: Vec3) -> Vec3 {
+        Vec3::new(self * other.x, self * other.y, self * other.z)
     }
 }

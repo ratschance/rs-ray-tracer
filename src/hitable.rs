@@ -43,9 +43,9 @@ impl Sphere {
 impl Hitable for Sphere {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let oc = r.origin() - self.center;
-        let a = r.direction().dot(r.direction());
-        let b = oc.dot(r.direction());
-        let c = oc.dot(oc) - self.radius * self.radius;
+        let a = r.direction().dot(&r.direction());
+        let b = oc.dot(&r.direction());
+        let c = oc.dot(&oc) - self.radius * self.radius;
         let descriminant = b * b - a * c;
         if descriminant > 0.0 {
             let sqrt_descriminant = descriminant.sqrt();
@@ -77,7 +77,7 @@ impl Hitable for [Box<Hitable>] {
                 Some(t_rec) => {
                     closest_so_far = t_rec.parameter;
                     hit = Some(t_rec);
-                }
+                },
                 None => {}
             }
         }

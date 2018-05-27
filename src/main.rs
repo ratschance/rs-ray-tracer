@@ -20,7 +20,7 @@ use std::path::Path;
 fn main() {
     let width: u32 = 1200;
     let height: u32 = 800;
-    let ns: u32 = 50;
+    let ns: u32 = 10;
 
     let hitable_list = gen_random_scene();
 
@@ -70,6 +70,45 @@ fn gen_random_scene() -> Vec<Box<Hitable>> {
         Material::Lambertian(Vec3::new(0.5, 0.5, 0.5)),
     )));
     // Randomly generate others
+    let reference_vec = Vec3::new(4.0, 0.2, 0.0);
+    for a in -11..11 {
+        for b in -11..11 {
+            let choose_mat = rand::random::<f64>();
+            let center = Vec3::new(a as f64 + 0.9 * rand::random::<f64>(),
+                                    0.2,
+                                    b as f64 + 0.9 * rand::random::<f64>());
+            if (center - reference_vec).length() > 0.9 {
+                if choose_mat < 0.8 {
+                    // Diffuse
+                    let lam = Vec3::new(rand::random::<f64>() * rand::random::<f64>(),
+                                            rand::random::<f64>() * rand::random::<f64>(),
+                                            rand::random::<f64>() * rand::random::<f64>());
+                    hitable_list.push(Box::new(Sphere::new(
+                        center,
+                        0.2,
+                        Material::Lambertian(lam),
+                    )));
+                } else if choose_mat < 0.95 {
+                    // Metal
+                    let metal = Vec3::new(0.5 * (1.0 + rand::random::<f64>()),
+                                            0.5 * (1.0 + rand::random::<f64>()),
+                                            0.5 * (1.0 + rand::random::<f64>()));
+                    hitable_list.push(Box::new(Sphere::new(
+                        center,
+                        0.2,
+                        Material::Metal(metal, 0.5 * rand::random::<f64>()),
+                    )));
+                } else {
+                    // Glass
+                    hitable_list.push(Box::new(Sphere::new(
+                        center,
+                        0.2,
+                        Material::Dielectric(1.5),
+                    )));
+                }
+            }
+        }
+    }
     hitable_list.push(Box::new(Sphere::new(
         Vec3::new(0.0, 1.0, 0.0),
         1.0,

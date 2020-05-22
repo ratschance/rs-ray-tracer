@@ -21,8 +21,15 @@ pub struct Camera {
 
 impl Camera {
     /// Returns a new `Camera` with default values.
-    pub fn new(lookfrom: Vec3, lookat: Vec3, view_up: Vec3, view_fov: f64,
-                aspect: f64, aperture: f64, focus_dist: f64) -> Self {
+    pub fn new(
+        lookfrom: Vec3,
+        lookat: Vec3,
+        view_up: Vec3,
+        view_fov: f64,
+        aspect: f64,
+        aperture: f64,
+        focus_dist: f64,
+    ) -> Self {
         let theta = view_fov * f64::consts::PI / 180.0;
         let half_height = (theta / 2.0).tan();
         let half_width = aspect * half_height;
@@ -31,9 +38,12 @@ impl Camera {
         let v = w.cross(&u);
         Camera {
             origin: lookfrom,
-            lower_left_corner: lookfrom - u * half_width * focus_dist - v * half_height * focus_dist - w * focus_dist,
+            lower_left_corner: lookfrom
+                - u * half_width * focus_dist
+                - v * half_height * focus_dist
+                - w * focus_dist,
             horizontal: u * 2.0 * half_width * focus_dist,
-            vertical:  v * 2.0 * half_height * focus_dist,
+            vertical: v * 2.0 * half_height * focus_dist,
             lens_radius: aperture / 2.0,
         }
     }
@@ -51,15 +61,18 @@ impl Camera {
         let offset = u * rd.x + v * rd.y;
         Ray {
             origin: self.origin + offset,
-            direction: self.lower_left_corner + self.horizontal * u + self.vertical * v - self.origin - offset,
+            direction: self.lower_left_corner + self.horizontal * u + self.vertical * v
+                - self.origin
+                - offset,
         }
     }
 }
 
-fn random_in_unit_disc() -> Vec3{
+fn random_in_unit_disc() -> Vec3 {
     let mut p: Vec3;
     loop {
-        p = Vec3::new(rand::random::<f64>(), rand::random::<f64>(), 0.0) * 2.0 - Vec3::new(1.0, 1.0, 0.0);
+        p = Vec3::new(rand::random::<f64>(), rand::random::<f64>(), 0.0) * 2.0
+            - Vec3::new(1.0, 1.0, 0.0);
         if p.dot(&p) < 1.0 {
             break;
         }

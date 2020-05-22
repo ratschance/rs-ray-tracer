@@ -7,27 +7,26 @@ use hitable::HitRecord;
 pub enum Material {
     Lambertian(Vec3),
     Metal(Vec3, f64),
-    Dielectric(f64)
+    Dielectric(f64),
 }
 
 pub fn scatter(material: Material, r_in: &Ray, rec: &HitRecord) -> Option<(Vec3, Ray)> {
     let reflect = |v: Vec3, n: Vec3| v - (n * v.dot(&n) * 2.0);
     match material {
         Material::Dielectric(ref_idx) => {
-            let mut outward_normal: Vec3;
+            let outward_normal: Vec3;
             let reflected = reflect(r_in.direction(), rec.normal);
-            let mut ni_over_nt: f64;
+            let ni_over_nt: f64;
             let attenuation = Vec3::one();
-            let mut cosine: f64;
-            if r_in.direction().dot(&rec.normal) > 0.0 {
+            let cosine: f64 = if r_in.direction().dot(&rec.normal) > 0.0 {
                 outward_normal = -rec.normal;
                 ni_over_nt = ref_idx;
-                cosine = ref_idx * r_in.direction().dot(&rec.normal) / r_in.direction().length();
+                ref_idx * r_in.direction().dot(&rec.normal) / r_in.direction().length()
             } else {
                 outward_normal = rec.normal;
                 ni_over_nt = 1.0 / ref_idx;
-                cosine = -r_in.direction().dot(&rec.normal) / r_in.direction().length();
-            }
+                -r_in.direction().dot(&rec.normal) / r_in.direction().length()
+            };
             match refract(r_in.direction(), outward_normal, ni_over_nt) {
                 Some(refracted) => {
                     let reflect_prob = schlick(cosine, ref_idx);
@@ -36,8 +35,8 @@ pub fn scatter(material: Material, r_in: &Ray, rec: &HitRecord) -> Option<(Vec3,
                     } else {
                         Some((attenuation, Ray::new(rec.point, refracted)))
                     }
-                },
-                None => Some((attenuation, Ray::new(rec.point, reflected)))
+                }
+                None => Some((attenuation, Ray::new(rec.point, reflected))),
             }
         }
         Material::Lambertian(attenuation) => {
@@ -81,7 +80,8 @@ fn random_in_unit_sphere() -> Vec3 {
             rand::random::<f64>(),
             rand::random::<f64>(),
             rand::random::<f64>(),
-        ) * 2.0 - Vec3::new(1.0, 1.0, 1.0);
+        ) * 2.0
+            - Vec3::new(1.0, 1.0, 1.0);
     }
     point
 }

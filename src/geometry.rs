@@ -11,7 +11,7 @@
 //! [`Vec3`]: struct.Vec3.html
 //! [`Ray`]: struct.Ray.html
 
-use std::ops::{Add, AddAssign, Neg, Mul, Div, Sub};
+use std::ops::{Add, AddAssign, Div, Mul, Neg, Sub};
 
 /// A representation of a vector in 3-space.
 ///
@@ -41,10 +41,7 @@ pub struct Ray {
 impl Ray {
     /// Creates a new Ray with the given origin and direction.
     pub fn new(origin: Vec3, direction: Vec3) -> Self {
-        Ray {
-            origin: origin,
-            direction: direction,
-        }
+        Ray { origin, direction }
     }
 
     /// Returns the origin of the Ray.
@@ -71,7 +68,7 @@ impl Ray {
 impl Vec3 {
     /// Creates a new Vec3 with the given x, y, and z coords.
     pub fn new(x: f64, y: f64, z: f64) -> Self {
-        Vec3 { x: x, y: y, z: z }
+        Vec3 { x, y, z }
     }
 
     pub fn one() -> Self {
@@ -129,7 +126,7 @@ impl Vec3 {
         Vec3 {
             x: self.y * other.z - self.z * other.y,
             y: -(self.x * other.z - self.z * other.x),
-            z: self.x * other.y - self.y * other.x
+            z: self.x * other.y - self.y * other.x,
         }
     }
 

@@ -1,7 +1,6 @@
 use geometry::{Ray, Vec3};
 use material::Material;
 
-
 pub trait Hitable {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
 }
@@ -22,10 +21,10 @@ pub struct Sphere {
 impl HitRecord {
     pub fn new(parameter: f64, point: Vec3, normal: Vec3, material: Material) -> HitRecord {
         HitRecord {
-            parameter: parameter,
-            point: point,
-            normal: normal,
-            material: material,
+            parameter,
+            point,
+            normal,
+            material,
         }
     }
 }
@@ -33,9 +32,9 @@ impl HitRecord {
 impl Sphere {
     pub fn new(center: Vec3, radius: f64, material: Material) -> Self {
         Sphere {
-            center: center,
-            radius: radius,
-            material: material,
+            center,
+            radius,
+            material,
         }
     }
 }
@@ -68,17 +67,14 @@ impl Hitable for Sphere {
     }
 }
 
-impl Hitable for [Box<Hitable>] {
+impl Hitable for [Box<dyn Hitable>] {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let mut closest_so_far = t_max;
         let mut hit: Option<HitRecord> = None;
         for v in self.iter() {
-            match v.hit(r, t_min, closest_so_far) {
-                Some(t_rec) => {
-                    closest_so_far = t_rec.parameter;
-                    hit = Some(t_rec);
-                },
-                None => {}
+            if let Some(t_rec) = v.hit(r, t_min, closest_so_far) {
+                closest_so_far = t_rec.parameter;
+                hit = Some(t_rec);
             }
         }
         hit

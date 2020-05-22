@@ -6,21 +6,20 @@ mod hitable;
 mod material;
 
 use camera::Camera;
-use hitable::{Hitable, Sphere};
 use geometry::{Ray, Vec3};
+use hitable::{Hitable, Sphere};
 use material::Material;
 use rand::Rng;
-use std::error::Error;
 use std::f64;
 use std::fs::File;
-use std::io::BufWriter;
 use std::io::prelude::*;
+use std::io::BufWriter;
 use std::path::Path;
 
 fn main() {
     let width: u32 = 1200;
     let height: u32 = 800;
-    let ns: u32 = 10;
+    let ns: u32 = 50;
 
     let hitable_list = gen_random_scene();
 
@@ -28,13 +27,15 @@ fn main() {
     let lookat = Vec3::new(0.0, 0.0, 0.0);
     let dist_to_focus = 10.0;
     let aperture = 0.1;
-    let cam = Camera::new(lookfrom,
-                            lookat,
-                            Vec3::new(0.0, 1.0, 0.0),
-                            20.0,
-                            width as f64 / height as f64,
-                            aperture,
-                            dist_to_focus);
+    let cam = Camera::new(
+        lookfrom,
+        lookat,
+        Vec3::new(0.0, 1.0, 0.0),
+        20.0,
+        f64::from(width) / f64::from(height),
+        aperture,
+        dist_to_focus,
+    );
     let mut rng = rand::thread_rng();
     let mut pixel_data: Vec<(u8, u8, u8)> = Vec::new();
 
@@ -42,13 +43,13 @@ fn main() {
         for i in 0..width {
             let mut col = Vec3::new(0.0, 0.0, 0.0);
             for _ in 0..ns {
-                let u = (i as f64 + rng.gen::<f64>()) / (width as f64);
-                let v = (j as f64 + rng.gen::<f64>()) / (height as f64);
+                let u = (f64::from(i) + rng.gen::<f64>()) / f64::from(width);
+                let v = (f64::from(j) + rng.gen::<f64>()) / f64::from(height);
                 let r = cam.get_ray(u, v);
 
                 col += color(&r, &hitable_list, 0);
             }
-            let col = col / ns as f64;
+            let col = col / f64::from(ns);
             let ir = (255.99 * col.r().sqrt()) as u8;
             let ig = (255.99 * col.g().sqrt()) as u8;
             let ib = (255.99 * col.b().sqrt()) as u8;
@@ -58,12 +59,12 @@ fn main() {
     let output_path = Path::new("output.ppm");
     match File::create(&output_path) {
         Ok(file) => write_ppm(file, width, height, pixel_data),
-        Err(why) => println!("Could not create file - {}", why.description())
+        Err(e) => println!("Could not create file - {}", e.to_string()),
     }
 }
 
-fn gen_random_scene() -> Vec<Box<Hitable>> {
-    let mut hitable_list: Vec<Box<Hitable>> = Vec::new();
+fn gen_random_scene() -> Vec<Box<dyn Hitable>> {
+    let mut hitable_list: Vec<Box<dyn Hitable>> = Vec::new();
     hitable_list.push(Box::new(Sphere::new(
         Vec3::new(0.0, -1000.0, 0.0),
         1000.0,
@@ -74,15 +75,19 @@ fn gen_random_scene() -> Vec<Box<Hitable>> {
     for a in -11..11 {
         for b in -11..11 {
             let choose_mat = rand::random::<f64>();
-            let center = Vec3::new(a as f64 + 0.9 * rand::random::<f64>(),
-                                    0.2,
-                                    b as f64 + 0.9 * rand::random::<f64>());
+            let center = Vec3::new(
+                f64::from(a) + 0.9 * rand::random::<f64>(),
+                0.2,
+                f64::from(b) + 0.9 * rand::random::<f64>(),
+            );
             if (center - reference_vec).length() > 0.9 {
                 if choose_mat < 0.8 {
                     // Diffuse
-                    let lam = Vec3::new(rand::random::<f64>() * rand::random::<f64>(),
-                                            rand::random::<f64>() * rand::random::<f64>(),
-                                            rand::random::<f64>() * rand::random::<f64>());
+                    let lam = Vec3::new(
+                        rand::random::<f64>() * rand::random::<f64>(),
+                        rand::random::<f64>() * rand::random::<f64>(),
+                        rand::random::<f64>() * rand::random::<f64>(),
+                    );
                     hitable_list.push(Box::new(Sphere::new(
                         center,
                         0.2,
@@ -90,9 +95,11 @@ fn gen_random_scene() -> Vec<Box<Hitable>> {
                     )));
                 } else if choose_mat < 0.95 {
                     // Metal
-                    let metal = Vec3::new(0.5 * (1.0 + rand::random::<f64>()),
-                                            0.5 * (1.0 + rand::random::<f64>()),
-                                            0.5 * (1.0 + rand::random::<f64>()));
+                    let metal = Vec3::new(
+                        0.5 * (1.0 + rand::random::<f64>()),
+                        0.5 * (1.0 + rand::random::<f64>()),
+                        0.5 * (1.0 + rand::random::<f64>()),
+                    );
                     hitable_list.push(Box::new(Sphere::new(
                         center,
                         0.2,
@@ -135,13 +142,11 @@ fn write_ppm(file: File, width: u32, height: u32, data: Vec<(u8, u8, u8)>) {
     }
 }
 
-fn color(ray: &Ray, world: &[Box<Hitable>], depth: u8) -> Vec3 {
+fn color(ray: &Ray, world: &[Box<dyn Hitable>], depth: u8) -> Vec3 {
     match world.hit(ray, 0.001, f64::INFINITY) {
         Some(rec) => {
             if depth < 50 {
-                let vals = material::scatter(rec.material, ray, &rec);
-                if vals.is_some() {
-                    let (attenuation, scattered) = vals.unwrap();
+                if let Some((attenuation, scattered)) = material::scatter(rec.material, ray, &rec) {
                     attenuation * color(&scattered, world, depth + 1)
                 } else {
                     Vec3::zero()

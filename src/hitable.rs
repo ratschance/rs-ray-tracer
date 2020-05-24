@@ -67,7 +67,7 @@ impl Hitable for Sphere {
     }
 }
 
-impl Hitable for [Box<dyn Hitable>] {
+impl Hitable for [Box<dyn Hitable + Sync>] {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let mut closest_so_far = t_max;
         let mut hit: Option<HitRecord> = None;

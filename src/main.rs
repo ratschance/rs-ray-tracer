@@ -1,4 +1,5 @@
 extern crate rand;
+extern crate rayon;
 
 pub mod camera;
 pub mod geometry;
@@ -10,6 +11,7 @@ use geometry::{Ray, Vec3};
 use hitable::{Hitable, Sphere};
 use material::Material;
 use rand::Rng;
+use rayon::prelude::*;
 use std::f64;
 use std::fs::File;
 use std::io::prelude::*;
@@ -36,20 +38,23 @@ fn main() {
         aperture,
         dist_to_focus,
     );
-    let mut rng = rand::thread_rng();
     let mut pixel_data: Vec<(u8, u8, u8)> = Vec::new();
 
     for j in (0..height).rev() {
         for i in 0..width {
-            let mut col = Vec3::new(0.0, 0.0, 0.0);
-            for _ in 0..ns {
-                let u = (f64::from(i) + rng.gen::<f64>()) / f64::from(width);
-                let v = (f64::from(j) + rng.gen::<f64>()) / f64::from(height);
-                let r = cam.get_ray(u, v);
+            let col = (0..ns)
+                .into_par_iter()
+                .map(|_| {
+                    let mut rng = rand::thread_rng();
 
-                col += color(&r, &hitable_list, 0);
-            }
-            let col = col / f64::from(ns);
+                    let u = (f64::from(i) + rng.gen::<f64>()) / f64::from(width);
+                    let v = (f64::from(j) + rng.gen::<f64>()) / f64::from(height);
+                    let r = cam.get_ray(u, v);
+
+                    color(&r, hitable_list.as_slice(), 0)
+                })
+                .sum::<Vec3>()
+                / f64::from(ns);
             let ir = (255.99 * col.r().sqrt()) as u8;
             let ig = (255.99 * col.g().sqrt()) as u8;
             let ib = (255.99 * col.b().sqrt()) as u8;
@@ -63,8 +68,8 @@ fn main() {
     }
 }
 
-fn gen_random_scene() -> Vec<Box<dyn Hitable>> {
-    let mut hitable_list: Vec<Box<dyn Hitable>> = Vec::new();
+fn gen_random_scene() -> Vec<Box<dyn Hitable + Sync>> {
+    let mut hitable_list: Vec<Box<dyn Hitable + Sync>> = Vec::new();
     hitable_list.push(Box::new(Sphere::new(
         Vec3::new(0.0, -1000.0, 0.0),
         1000.0,
@@ -142,7 +147,7 @@ fn write_ppm(file: File, width: u32, height: u32, data: Vec<(u8, u8, u8)>) {
     }
 }
 
-fn color(ray: &Ray, world: &[Box<dyn Hitable>], depth: u8) -> Vec3 {
+fn color(ray: &Ray, world: &[Box<dyn Hitable + Sync>], depth: u8) -> Vec3 {
     match world.hit(ray, 0.001, f64::INFINITY) {
         Some(rec) => {
             if depth < 50 {

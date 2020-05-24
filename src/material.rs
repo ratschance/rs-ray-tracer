@@ -2,6 +2,7 @@ extern crate rand;
 
 use geometry::{Ray, Vec3};
 use hitable::HitRecord;
+use rand::Rng;
 
 #[derive(Debug, Clone, Copy)]
 pub enum Material {
@@ -74,14 +75,11 @@ fn refract(v: Vec3, n: Vec3, ni_over_nt: f64) -> Option<Vec3> {
 }
 
 fn random_in_unit_sphere() -> Vec3 {
-    let mut point = Vec3::new(1.0, 1.0, 1.0);
+    let mut rng = rand::thread_rng();
+    let mut point = Vec3::one();
+
     while point.dot(&point) >= 1.0 {
-        point = Vec3::new(
-            rand::random::<f64>(),
-            rand::random::<f64>(),
-            rand::random::<f64>(),
-        ) * 2.0
-            - Vec3::new(1.0, 1.0, 1.0);
+        point = Vec3::new(rng.gen(), rng.gen(), rng.gen()) * 2.0 - Vec3::one();
     }
     point
 }

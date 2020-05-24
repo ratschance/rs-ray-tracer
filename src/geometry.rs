@@ -11,8 +11,6 @@
 //! [`Vec3`]: struct.Vec3.html
 //! [`Ray`]: struct.Ray.html
 
-use std::ops::{Add, AddAssign, Div, Mul, Neg, Sub};
-
 /// A representation of a vector in 3-space.
 ///
 /// This `struct` is instantiated by the [`new`] function. See its
@@ -135,12 +133,11 @@ impl Vec3 {
     /// Unit vector will have the same direction as the vector
     /// this is called on.
     pub fn unit_vector(&self) -> Self {
-        let length = self.length();
-        Vec3::new(self.x / length, self.y / length, self.z / length)
+        *self / self.length()
     }
 }
 
-impl Add for Vec3 {
+impl std::ops::Add for Vec3 {
     type Output = Vec3;
 
     fn add(self, other: Vec3) -> Vec3 {
@@ -148,13 +145,15 @@ impl Add for Vec3 {
     }
 }
 
-impl AddAssign for Vec3 {
+impl std::ops::AddAssign for Vec3 {
     fn add_assign(&mut self, other: Vec3) {
-        *self = Vec3::new(self.x + other.x, self.y + other.y, self.z + other.z)
+        self.x += other.x;
+        self.y += other.y;
+        self.z += other.z;
     }
 }
 
-impl Add<f64> for Vec3 {
+impl std::ops::Add<f64> for Vec3 {
     type Output = Vec3;
 
     fn add(self, other: f64) -> Vec3 {
@@ -162,7 +161,7 @@ impl Add<f64> for Vec3 {
     }
 }
 
-impl Sub for Vec3 {
+impl std::ops::Sub for Vec3 {
     type Output = Vec3;
 
     fn sub(self, other: Vec3) -> Vec3 {
@@ -170,7 +169,7 @@ impl Sub for Vec3 {
     }
 }
 
-impl Sub<f64> for Vec3 {
+impl std::ops::Sub<f64> for Vec3 {
     type Output = Vec3;
 
     fn sub(self, other: f64) -> Vec3 {
@@ -178,7 +177,7 @@ impl Sub<f64> for Vec3 {
     }
 }
 
-impl Div<f64> for Vec3 {
+impl std::ops::Div<f64> for Vec3 {
     type Output = Vec3;
 
     fn div(self, other: f64) -> Vec3 {
@@ -190,7 +189,7 @@ impl Div<f64> for Vec3 {
     }
 }
 
-impl Neg for Vec3 {
+impl std::ops::Neg for Vec3 {
     type Output = Vec3;
 
     fn neg(self) -> Vec3 {
@@ -198,7 +197,7 @@ impl Neg for Vec3 {
     }
 }
 
-impl Mul for Vec3 {
+impl std::ops::Mul for Vec3 {
     type Output = Vec3;
 
     fn mul(self, other: Vec3) -> Vec3 {
@@ -206,7 +205,7 @@ impl Mul for Vec3 {
     }
 }
 
-impl Mul<f64> for Vec3 {
+impl std::ops::Mul<f64> for Vec3 {
     type Output = Vec3;
 
     fn mul(self, other: f64) -> Vec3 {
@@ -214,10 +213,19 @@ impl Mul<f64> for Vec3 {
     }
 }
 
-impl Mul<Vec3> for f64 {
+impl std::ops::Mul<Vec3> for f64 {
     type Output = Vec3;
 
     fn mul(self, other: Vec3) -> Vec3 {
         Vec3::new(self * other.x, self * other.y, self * other.z)
+    }
+}
+
+impl std::iter::Sum<Self> for Vec3 {
+    fn sum<I>(iter: I) -> Self
+    where
+        I: Iterator<Item = Self>,
+    {
+        iter.fold(Vec3::zero(), std::ops::Add::add)
     }
 }

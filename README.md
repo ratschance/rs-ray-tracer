@@ -1,7 +1,19 @@
-# 2017-01-28 RokkinCat Hack-N-Tell
+# rs-ray-tracer
 
-## Ray Tracer in Rust
-Should be an interesting project considering it is my first Rust project and my first
-attempt at implementing a Ray Tracer.
+Rust implementation of "Ray Tracing in One Weekend" by Peter Shirley. Created as a first project to learn Rust.
 
-Will be following along with "Ray Tracing in One Weekend" By Peter Shirley
+![Sample Output](sample.png "Sample Output")
+
+## Features
+
+- Completes all features in the book
+- Parallelized with Rayon
+
+## Limitations
+
+- Only outputs to PPM currently
+- Was my first Rust project, so it is not the most idiomatic Rust code
+
+## Resources
+
+- [Ray Tracing in One Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html)
